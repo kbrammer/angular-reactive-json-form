@@ -1,0 +1,50 @@
+@import "styles.bootstrap.scss";
+@import "bootstrap/scss/bootstrap.scss";
+
+.survey {
+  width: 450px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+}
+
+.section-list {
+  .section-title,
+  .section-subtitle {
+    margin-top: 1rem;
+    padding: 0.5rem;
+  }
+
+  .section-title {
+    color: #1d90ff;
+    background-color: #d2e9ff;
+    font-size: 20px;
+  }
+
+  .section-items {
+    padding: 0rem 0.5rem;
+
+    .section-item {
+      .item-field {
+        color: #333;
+      }
+
+      .item-required {
+        color: red;
+
+        ::after {
+          content: "*";
+        }
+      }
+    }
+  }
+
+  .section-content {
+    font-style: italic;
+  }
+}
+
+.code {
+  background-color: #ccc;
+  font-family: monospace;
+  padding: 0.5rem;
+}

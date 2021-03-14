@@ -1,0 +1,11 @@
+<div class="survey m-auto">
+  <button class="btn btn-sm btn-secondary" (click)="debug=!debug">Debug</button>
+  <app-dynamic-form-group *ngIf="showForm" class="section-list" [formGroup]="formGroup" [sections]="sections"
+    [debug]="debug" (submitted)="onSubmitted($event)">
+  </app-dynamic-form-group>
+
+  <!-- debug -->
+  <div *ngIf="payLoad" class="form-row">
+    <pre>{{ payLoad | json }}</pre>
+  </div>
+</div>

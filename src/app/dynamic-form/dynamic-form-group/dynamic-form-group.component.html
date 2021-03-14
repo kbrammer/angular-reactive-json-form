@@ -1,0 +1,27 @@
+<form class="needs-validation" (ngSubmit)="submitted.emit(formGroup)" [formGroup]="formGroup" #ngForm="ngForm"
+  [ngClass]="{'was-validated': ngForm.submitted}" novalidate>
+  <div class="section-list" *ngFor="let section of sections">
+    <div *ngIf="section.visible === true">
+      <!-- title -->
+      <div class="section-title" *ngIf="section.title" [innerHTML]="section.title"></div>
+      <!-- sub-title -->
+      <div class="section-subtitle" *ngIf="section.subtitle" [innerHTML]="section.subtitle"></div>
+      <!-- questions -->
+      <div class="section-items">
+        <!-- display question controls -->
+        <div *ngFor="let question of section.questions" class="">
+          <app-question [question]="question" [submitted]="ngForm.submitted" [formGroup]="formGroup" [debug]="debug">
+          </app-question>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- submit -->
+  <div class="d-flex flex-row justify-content-center mt-2">
+    <button class="btn btn-default border mx-2">Cancel</button>
+
+    <!-- [disabled]="!form.valid" -->
+    <button class="btn btn-secondary mx-2" type="submit">Save</button>
+  </div>
+</form>
