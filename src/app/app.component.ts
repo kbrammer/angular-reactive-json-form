@@ -1,6 +1,7 @@
 import { Component, OnDestroy } from "@angular/core";
 import { FormGroup } from "@angular/forms";
-import { Subscription } from "rxjs";
+import { Subject, Subscription } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 import { FormSection } from "./dynamic-form/dynamic-form.models";
 import {
     FormGroupService,
@@ -18,7 +19,8 @@ export class AppComponent implements OnDestroy {
     payLoad: string;
     showConfig: boolean;
     showForm: boolean;
-    subs = new Array<Subscription>();
+
+    private ngDestroy$ = new Subject();
 
     constructor(
         private formGroupService: FormGroupService,
@@ -32,11 +34,30 @@ export class AppComponent implements OnDestroy {
             this.formGroup = this.formGroupService.toFormGroup(sections);
             this.showForm = true;
             
-            this.subs[0] = this.formGroup?.valueChanges.subscribe(
+            this.formGroup?.valueChanges
+                .pipe(takeUntil(this.ngDestroy$))
+                .subscribe(
                 (selectedValue) => {
                     this.payLoad = selectedValue;
+                    this.onFormValuesChanged(selectedValue);
                 }
             );
+        });
+    }
+
+    private onFormValuesChanged(formData: any) {
+        this.sections.forEach((s) => {
+            s.visible = this.formGroupService.checkSectionDisplayRules(
+                s,
+                this.formGroup
+            );
+
+            s.questions.forEach((q) => {
+                q.visible = this.formGroupService.checkQuestionDisplayRules(
+                    q,
+                    this.formGroup
+                );
+            });
         });
     }
 
@@ -49,6 +70,7 @@ export class AppComponent implements OnDestroy {
     }
 
     ngOnDestroy() {
-        this.subs.forEach((s) => s.unsubscribe());
+        this.ngDestroy$.next();
+        this.ngDestroy$.complete();
     }
 }

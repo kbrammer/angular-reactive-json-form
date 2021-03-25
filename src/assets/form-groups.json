@@ -354,7 +354,18 @@
     {
       "id": 2,
       "title": "Acknowlege",
-      "visible": true,
+      "visible": false,
+      "displayRules": [
+        {
+          "and": [
+            {
+              "key": "favoriteColor",
+              "operator": "=",
+              "value": "Red"
+            }
+          ]
+        }
+      ],
       "questions": [
         {
           "key": "ackCheck",

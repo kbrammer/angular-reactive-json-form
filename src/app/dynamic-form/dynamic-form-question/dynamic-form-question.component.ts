@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { Form, FormControl, FormGroup } from "@angular/forms";
+import { FormGroup } from "@angular/forms";
 import { QuestionBase } from "../dynamic-form.models";
 
 @Component({
@@ -13,17 +13,10 @@ export class DynamicFormQuestionComponent implements OnInit {
     @Input() submitted: boolean;
     @Input() debug: boolean;
 
-    readonly control: FormControl;
-
     constructor() {
-        this.control = new FormControl({
-            value: "",
-            disabled: false,
-        });
     }
 
     ngOnInit() {
-        this.control.setValue(this.question.label);
     }
 
     get isValid() {
@@ -31,7 +24,6 @@ export class DynamicFormQuestionComponent implements OnInit {
         return name.valid;
     }
 
-    //https://angular.io/guide/form-validation#validating-input-in-reactive-forms
     get isInvalid() {
         let name = this.formGroup.controls[this.question.key];
         return this.submitted
@@ -42,11 +34,5 @@ export class DynamicFormQuestionComponent implements OnInit {
     get errors() {
         let name = this.formGroup.controls[this.question.key];
         return name?.errors;
-    }
-
-    onControlSaveValue() {
-        console.log("save", this.control.value);
-        // emit, dispatch to store
-        // this.question.label = this.control.value;
     }
 }

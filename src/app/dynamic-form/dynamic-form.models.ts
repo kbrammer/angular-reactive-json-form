@@ -8,6 +8,7 @@ export interface FormSection {
   subtitle?: string;
   visible: boolean;
   questions: QuestionBase<any>[];
+  displayRules?: DisplayRule[];
 }
 
 export class QuestionBase<T> {
@@ -17,19 +18,11 @@ export class QuestionBase<T> {
   value: T;
   label: string;
   placeholder: string;
-  visible: boolean;
-  order: number;
-
-  get validations() {
-    const rules: any = {};
-    this.validationRules.forEach(r => {
-      rules[r.type] = r.message;
-    });
-    return rules;
-  }
-
-  validationRules: Array<AsyncValidationRule>;
   choices: { key: string; value: string }[];
+  order: number;
+  validationRules: Array<AsyncValidationRule>;
+  visible: boolean;
+  displayRules: DisplayRule[];
 
   constructor(
     options: {
@@ -43,6 +36,7 @@ export class QuestionBase<T> {
       visible?: boolean;
       validationRules?: Array<AsyncValidationRule>;
       choices?: { key: string; value: string }[];
+      displayRules?: DisplayRule[];
     } = {}
   ) {
     this.value = options.value;
@@ -55,6 +49,15 @@ export class QuestionBase<T> {
     this.visible = options.visible || true;
     this.validationRules = options.validationRules || [];
     this.choices = options.choices || [];
+    this.displayRules = options.displayRules || undefined;
+  }
+
+  get validations() {
+    const rules: any = {};
+    this.validationRules.forEach(r => {
+      rules[r.type] = r.message;
+    });
+    return rules;
   }
 }
 
@@ -78,6 +81,34 @@ export interface AsyncValidationRule {
   pattern?: string;
   custom?: string; // TODO
 }
+
+export interface DisplayRule {
+  and?: FieldSpecification[];
+  or?: FieldSpecification[];
+  not?: FieldSpecification[];
+}
+
+export interface FieldSpecification {
+  key: string;
+  operator:
+    | "="
+    | "<>"
+    | "<"
+    | ">"
+    | "<="
+    | ">="
+    | "contains"
+    | "endswith"
+    | "startswith"
+    | "isblank"
+    | "isnotblank"
+    | "notcontains"
+    | "between"
+    | "hasvalue"
+    | "selected";
+  value: any;
+}
+
 export class ContentBox extends QuestionBase<string> {
   controlType = "";
 }
