@@ -11,7 +11,10 @@ import {
   DropdownQuestion,
   TextboxQuestion,
   FormSection,
-  FormGroupConfigResponse, QuestionBase, FieldSpecification
+  FormGroupConfigResponse,
+  QuestionBase,
+  FieldSpecification,
+  DisplayRule
 } from "./dynamic-form.models";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { phoneNumberValidator } from "../shared/validators/phone.directive";
@@ -151,109 +154,78 @@ export class FormGroupService {
     return new FormGroup(group);
   }
 
-  private getIsAndMatch(
-        and: FieldSpecification[] | undefined,
-        formGroup: FormGroup
-    ): boolean {
-        let isAndMatch: boolean = true;
-        and?.forEach((w) => {
-            let control = formGroup.get(w.key);
-            switch (w.operator) {
-                case "=":
-                    if (w.value !== control.value) {
-                        isAndMatch = false;
-                    }
-                    break;
-            }
-        });
-        return isAndMatch;
-    }
-
-    private getIsOrMatch(
-        or: FieldSpecification[] | undefined,
-        formGroup: FormGroup
-    ): boolean {
-        let orResults: boolean[] = [];
-        or?.forEach((w) => {
-            let control = formGroup.get(w.key);
-            switch (w.operator) {
-                case "=":
-                    orResults.push(w.value === control.value);
-                    break;
-            }
-        });
-        let isOrMatch = orResults.find((a) => a === true);
-        return isOrMatch;
-    }
-
-    checkSectionDisplayRules(
-        section: FormSection,
-        formGroup: FormGroup
-    ): boolean {
+  checkDisplayRules(displayRules: any[], formGroup: FormGroup): boolean {
         let result = true;
-        if (section.displayRules) {
-            section.displayRules.forEach((displayRule) => {
-                // ands
-                let isAndMatch = displayRule.and
-                    ? this.getIsAndMatch(displayRule.and, formGroup)
-                    : false;
 
-                // ors
-                let isOrMatch = displayRule.or
-                    ? this.getIsOrMatch(displayRule.or, formGroup)
-                    : false;
+        let equals = new DisplayRule<FieldSpecification>(
+            (w) =>
+                w.operator !== "=" ||
+                (w.operator === "=" && w.value === formGroup.get(w.key)?.value)
+        );
 
-                console.log("displayRule", {
-                    isAndMatch,
-                    isOrMatch,
+        let notEquals = new DisplayRule<FieldSpecification>(
+            (w) =>
+                w.operator !== "<>" ||
+                (w.operator === "<>" && w.value !== formGroup.get(w.key)?.value)
+        );
+
+        let contains = new DisplayRule<FieldSpecification>(
+            (w) =>
+                w.operator !== "contains" ||
+                (w.operator === "contains" &&
+                    formGroup.get(w.key)?.value?.search(w.value) > -1)
+        );
+
+        if (displayRules) {
+            let isVisible: boolean = true;
+            displayRules.forEach((displayRule) => {
+                displayRule.and?.forEach((w) => {
+                    let isAndSatisfied = equals
+                        .and(notEquals)
+                        .and(contains)
+                        .isSatisfiedBy(w);
+
+                    if (isAndSatisfied === false) {
+                        isVisible = false;
+                    }
                 });
 
-                if (isAndMatch === true) {
-                    result = true;
-                } else if (isOrMatch === true) {
-                    result = true;
-                } else {
-                    result = false;
+                if (isVisible === false) {
+                    return isVisible;
                 }
+
+                displayRule.or?.forEach((w) => {
+                    let isAndSatisfied = equals
+                        .or(notEquals)
+                        .or(contains)
+                        .isSatisfiedBy(w);
+
+                    if (isAndSatisfied === false) {
+                        isVisible = false;
+                    }
+                });
             });
+
+            return isVisible;
         } else {
             // always visible if no rules are specified
             result = true;
         }
         return result;
+    }
+    // build specifications for display rules
+    checkSectionDisplayRules(
+        section: FormSection,
+        formGroup: FormGroup
+    ): boolean {
+        return this.checkDisplayRules(section.displayRules, formGroup);
     }
 
     checkQuestionDisplayRules(
         question: QuestionBase<any>,
         formGroup: FormGroup
     ): boolean {
-        let result = true;
-        if (question.displayRules) {
-            question.displayRules.forEach((displayRule) => {
-                // ands
-                let isAndMatch = this.getIsAndMatch(displayRule.and, formGroup);
-
-                // ors
-                let isOrMatch = this.getIsOrMatch(displayRule.or, formGroup);
-
-                console.log("question displayRule", {
-                    isAndMatch,
-                    isOrMatch,
-                });
-
-                if (isAndMatch === true) {
-                    result = true;
-                } else if (isOrMatch === true) {
-                    result = true;
-                } else {
-                    result = false;
-                }
-            });
-        } else {
-            // always visible if no rules are specified
-            result = true;
-        }
-        return result;
+        return this.checkDisplayRules(question.displayRules, formGroup);
     }
 
 }

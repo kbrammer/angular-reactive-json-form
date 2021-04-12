@@ -1,3 +1,5 @@
+import { LinqSpecification } from "../shared/specification";
+
 export interface FormGroupConfigResponse {
   groups: Array<FormSection>;
 }
@@ -8,7 +10,7 @@ export interface FormSection {
   subtitle?: string;
   visible: boolean;
   questions: QuestionBase<any>[];
-  displayRules?: DisplayRule[];
+  displayRules?: DisplayRuleConfig[];
 }
 
 export class QuestionBase<T> {
@@ -22,7 +24,7 @@ export class QuestionBase<T> {
   order: number;
   validationRules: Array<AsyncValidationRule>;
   visible: boolean;
-  displayRules: DisplayRule[];
+  displayRules: DisplayRuleConfig[];
 
   constructor(
     options: {
@@ -36,7 +38,7 @@ export class QuestionBase<T> {
       visible?: boolean;
       validationRules?: Array<AsyncValidationRule>;
       choices?: { key: string; value: string }[];
-      displayRules?: DisplayRule[];
+      displayRules?: DisplayRuleConfig[];
     } = {}
   ) {
     this.value = options.value;
@@ -82,10 +84,18 @@ export interface AsyncValidationRule {
   custom?: string; // TODO
 }
 
-export interface DisplayRule {
+export interface DisplayRuleConfig {
   and?: FieldSpecification[];
   or?: FieldSpecification[];
   not?: FieldSpecification[];
+}
+
+export class DisplayRule<T> extends LinqSpecification<T> {
+  expression: (o: T) => boolean;
+  constructor(expression: (o: T) => boolean) {
+    super();
+    this.expression = expression;
+  }
 }
 
 export interface FieldSpecification {
