@@ -1,120 +1,140 @@
 <div [formGroup]="formGroup" *ngIf="question.visible">
-  <div class="item-field" [ngSwitch]="question.controlType">
-    <!-- label -->
-    <label [attr.for]="question.key" class="form-label">
-      <span *ngIf="question.validations.required" class="text-danger"
-        >*&nbsp;</span
-      >
-      <span [innerHTML]="question.label"></span>
-    </label>
+    <div class="item-field" [ngSwitch]="question.controlType">
+        <!-- debug -->
+        <div *ngIf="debug" class="text-info">
+            <span
+                >{{ question.order }}) {{ question.key }} -
+                {{ question.tag }}</span
+            >
+        </div>
+        <!-- label -->
+        <label class="form-label" [attr.for]="question.key">
+            <span *ngIf="question.validations.required" class="text-danger"
+                >*&nbsp;</span
+            >
+            <span [innerHTML]="question.label"></span>
+        </label>
 
-    <!-- textbox -->
-    <div *ngSwitchCase="'textbox'">
-      <input
-        class="form-control"
-        [placeholder]="question.placeholder"
-        [formControlName]="question.key"
-        [type]="question.type"
-        [required]="question.validations.required"
-      />
-    </div>
+        <!-- textbox -->
+        <div *ngSwitchCase="'textbox'">
+            <input
+                class="form-control"
+                [placeholder]="question.placeholder"
+                [formControlName]="question.key"
+                [type]="question.type"
+                (ngModelChange)="onValueChanged($event)"
+            />
+        </div>
 
-    <!-- dropdown -->
-    <div *ngSwitchCase="'dropdown'">
-      <select class="form-control" [formControlName]="question.key"
-        [required]="question.validations.required">
-        <!-- <option value="">Choose...</option> -->
-        <option *ngFor="let opt of question.choices" [value]="opt.key">
-          {{ opt.value }}
-        </option>
-      </select>
-    </div>
+        <!-- select -->
+        <div *ngSwitchCase="'dropdown'">
+            <select
+                class="form-control"
+                [formControlName]="question.key"
+                (ngModelChange)="onValueChanged($event)"
+            >
+                <!-- <option *ngIf="!question.value">{{ question.placeholder }}</option> -->
+                <option *ngFor="let opt of question.choices" [value]="opt.key">
+                    {{ opt.value }}
+                </option>
+            </select>
+        </div>
 
-    <!-- radio -->
-    <div *ngSwitchCase="'radiobutton'">
-      <div class="form-check" *ngFor="let opt of question.choices; index as i">
-        <input
-          class="form-check-input"
-          type="radio"
-          [formControlName]="question.key"
-          [attr.id]="question.key + i.toString()"
-          [value]="opt.key"
-          [required]="question.validations.required"
-        />
-        <label
-          [attr.for]="question.key + i.toString()"
-          [innerHTML]="opt.value"
-        ></label>
-      </div>
-    </div>
+        <!-- radio -->
+        <!-- [tabindex]="question.order" -->
+        <div *ngSwitchCase="'radiobutton'">
+            <div
+                class="form-check"
+                *ngFor="let opt of question.choices; index as i"
+            >
+                <input
+                    class="form-check-input"
+                    type="radio"
+                    [formControlName]="question.key"
+                    [attr.id]="question.key + i.toString()"
+                    [value]="opt.key"
+                    (ngModelChange)="onValueChanged($event)"
+                />
+                <label
+                    [attr.for]="question.key + i.toString()"
+                    [innerHTML]="opt.value"
+                ></label>
+            </div>
+        </div>
 
-    <!-- checkbox -->
-    <div *ngSwitchCase="'checkbox'">
-      <div class="form-check" *ngFor="let opt of question.choices; index as i">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          [formControlName]="question.key"
-          [attr.id]="question.key + i.toString()"
-          [value]="opt.key"
-          [required]="question.validations.required"
-        />
-        <label
-          [attr.for]="question.key + i.toString()"
-          [innerHTML]="opt.value"
-        ></label>
-      </div>
-    </div>
+        <!-- checkbox -->
+        <div *ngSwitchCase="'checkbox'">
+            <div
+                class="form-check"
+                *ngFor="let opt of question.choices; index as i"
+            >
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    [formControlName]="question.key"
+                    [attr.id]="question.key + i.toString()"
+                    [value]="opt.key"
+                    (ngModelChange)="onValueChanged($event)"
+                />
+                <label
+                    [attr.for]="question.key + i.toString()"
+                    [innerHTML]="opt.value"
+                ></label>
+            </div>
+        </div>
 
-    <!-- date -->
-    <div *ngSwitchCase="'datebox'">
-      <input
-        class="form-control"
-        [formControlName]="question.key"
-        [type]="question.type"
-        [value]="question.value"
-        [required]="question.validations.required"
-      />
-    </div>
+        <!-- date -->
+        <div *ngSwitchCase="'datebox'">
+            <input
+                class="form-control"
+                [formControlName]="question.key"
+                [type]="question.type"
+                [value]="question.value"
+                (ngModelChange)="onValueChanged($event)"
+            />
+        </div>
 
-    <!-- content -->
-    <div *ngSwitchCase="'contextbox'">
-      <div class="section-content" [innerHTML]="question.label"></div>
+        <!-- content -->
+        <div *ngSwitchCase="'contextbox'">
+            <div class="section-content" [innerHTML]="question.label"></div>
+        </div>
     </div>
 
     <!-- validation errors -->
     <div class="text-danger" *ngIf="isInvalid">
-      <div *ngIf="formGroup.controls[question.key].errors.required">
-        {{ question.validations.required }}
-      </div>
-      <div *ngIf="formGroup.controls[question.key].errors.minlength">
-        {{ question.validations.minlength }}
-      </div>
-      <div *ngIf="formGroup.controls[question.key].errors.maxlength">
-        {{ question.validations.maxLength }}
-      </div>
-      <div *ngIf="formGroup.controls[question.key].errors.min">
-        {{ question.validations.min }}
-      </div>
-      <div *ngIf="formGroup.controls[question.key].errors.max">
-        {{ question.validations.max }}
-      </div>
-      <div *ngIf="formGroup.controls[question.key].errors.pattern">
-        {{ question.validations.pattern }}
-      </div>
-      <div *ngIf="formGroup.controls[question.key].errors.phone">
-        {{ question.validations.phone }}
-      </div>
-      <div *ngIf="formGroup.controls[question.key].errors.custom">
-        {{ question.validations.custom }}
-      </div>
+        <div *ngIf="formGroup.controls[question.key].errors.required">
+            {{ question.validations.required }}
+        </div>
+        <div *ngIf="formGroup.controls[question.key].errors.minlength">
+            {{ question.validations.minlength }}
+        </div>
+        <div *ngIf="formGroup.controls[question.key].errors.maxlength">
+            {{ question.validations.maxLength }}
+        </div>
+        <div *ngIf="formGroup.controls[question.key].errors.min">
+            {{ question.validations.min }}
+        </div>
+        <div *ngIf="formGroup.controls[question.key].errors.max">
+            {{ question.validations.max }}
+        </div>
+        <div *ngIf="formGroup.controls[question.key].errors.pattern">
+            {{ question.validations.pattern }}
+        </div>
+        <div *ngIf="formGroup.controls[question.key].errors.phone">
+            {{ question.validations.phone }}
+        </div>
+        <div *ngIf="formGroup.controls[question.key].errors.custom">
+            {{ question.validations.custom }}
+        </div>
+    </div>
+    <!-- debug -->
+    <div *ngIf="debug" class="text-info">
+        <span>Status: {{ formGroup.controls[question.key].status }}</span>
     </div>
 
-    <!-- debug -->
     <div class="code" *ngIf="debug">
-      <pre style="background-color: #ccc">
-status: {{ formGroup.controls[question.key].status | json }}
-errors: {{ formGroup.controls[question.key].errors | json }}</pre>
+        <pre style="background-color: #ccc">
+validation errors: {{ formGroup.controls[question.key].errors | json }}</pre
+        >
     </div>
-  </div>
 </div>
