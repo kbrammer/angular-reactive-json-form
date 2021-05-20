@@ -1,6 +1,6 @@
 import { AbstractControl, FormGroup, ValidatorFn } from "@angular/forms";
-import { LinqSpecification } from "../shared/specifications";
-import { LinqSpecification2 } from "../shared/specifications2";
+import { LinqSpecification } from "../shared/specification";
+import { LinqSpecification2 } from "../shared/specification2";
 
 export interface FormGroupConfigResponse {
     groups: Array<FormSection>;

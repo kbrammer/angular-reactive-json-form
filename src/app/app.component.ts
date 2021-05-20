@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from "@angular/core";
 import { FormGroup } from "@angular/forms";
-import { Subject, Subscription } from "rxjs";
+import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { FormSection } from "./dynamic-form/dynamic-form.models";
 import {
@@ -22,38 +22,39 @@ export class AppComponent implements OnDestroy {
 
     private ngDestroy$ = new Subject();
 
-    constructor(
-        private formGroupService: FormGroupService,
-    ) {}
+    constructor(private formSectionService: FormGroupService) {}
 
     ngOnInit() {
         this.showForm = false;
-        
-        this.formGroupService.getSections().subscribe((sections) => {
-            this.sections = sections;
-            this.formGroup = this.formGroupService.toFormGroup(sections);
-            this.showForm = true;
-            
+
+        this.formSectionService.getFormGroup().subscribe((response) => {
+            this.formGroup = response.formGroup;
+            this.sections = response.sections;
+            this.checkDisplayRules();
             this.formGroup?.valueChanges
-                .pipe(takeUntil(this.ngDestroy$))
-                .subscribe(
-                (selectedValue) => {
-                    this.payLoad = selectedValue;
-                    this.onFormValuesChanged(selectedValue);
-                }
-            );
+            .pipe(takeUntil(this.ngDestroy$))
+            .subscribe((formData) => {
+                this.onFormValuesChanged(formData);
+            });
+            this.showForm = true;
         });
     }
 
     private onFormValuesChanged(formData: any) {
+        // console.log("onFormValuesChanged", formData);
+        this.checkDisplayRules();
+    }
+
+    private checkDisplayRules() {
+        // console.log("onFormValuesChanged", formData);
         this.sections.forEach((s) => {
-            s.visible = this.formGroupService.checkSectionDisplayRules(
+            s.visible = this.formSectionService.checkSectionDisplayRules(
                 s,
                 this.formGroup
             );
 
             s.questions.forEach((q) => {
-                q.visible = this.formGroupService.checkQuestionDisplayRules(
+                q.visible = this.formSectionService.checkQuestionDisplayRules(
                     q,
                     this.formGroup
                 );
@@ -62,6 +63,7 @@ export class AppComponent implements OnDestroy {
     }
 
     onSubmitted(formGroup: FormGroup) {
+        console.log("form", formGroup);
         this.payLoad = formGroup?.getRawValue();
     }
 
